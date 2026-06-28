@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import L from "leaflet";
+import type * as LType from "leaflet";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, statusClass, statusLabel, type Hydrant } from "@/lib/db";
 import { NOUACEUR_CENTER, NOUACEUR_ZOOM } from "@/lib/districts";
@@ -10,7 +10,7 @@ interface Props {
   filterStatus?: "all" | "ok" | "warn" | "bad";
 }
 
-function pinIcon(kind: "ok" | "warn" | "bad") {
+function pinIcon(L: typeof LType, kind: "ok" | "warn" | "bad") {
   return L.divIcon({
     className: "",
     html: `<div class="hydrant-pin ${kind}"></div>`,
@@ -21,43 +21,52 @@ function pinIcon(kind: "ok" | "warn" | "bad") {
 
 export function HydrantMap({ filterDistrict, filterStatus = "all" }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<L.Map | null>(null);
-  const layerRef = useRef<L.LayerGroup | null>(null);
+  const mapRef = useRef<LType.Map | null>(null);
+  const layerRef = useRef<LType.LayerGroup | null>(null);
+  const LRef = useRef<typeof LType | null>(null);
   const navigate = useNavigate();
 
   const hydrants = useLiveQuery(() => db.hydrants.toArray(), []);
 
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
-    const map = L.map(containerRef.current, {
-      center: NOUACEUR_CENTER,
-      zoom: NOUACEUR_ZOOM,
-      zoomControl: true,
-    });
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "&copy; OpenStreetMap",
-      maxZoom: 19,
-    }).addTo(map);
-    layerRef.current = L.layerGroup().addTo(map);
-    mapRef.current = map;
+    let cancelled = false;
+    (async () => {
+      if (typeof window === "undefined") return;
+      const mod = await import("leaflet");
+      const L = mod.default ?? mod;
+      if (cancelled || !containerRef.current || mapRef.current) return;
+      LRef.current = L;
+      const map = L.map(containerRef.current, {
+        center: NOUACEUR_CENTER,
+        zoom: NOUACEUR_ZOOM,
+        zoomControl: true,
+      });
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap",
+        maxZoom: 19,
+      }).addTo(map);
+      layerRef.current = L.layerGroup().addTo(map);
+      mapRef.current = map;
 
-    // Try center on user
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => map.setView([pos.coords.latitude, pos.coords.longitude], 14),
-        () => {},
-        { enableHighAccuracy: true, timeout: 5000 }
-      );
-    }
-
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => map.setView([pos.coords.latitude, pos.coords.longitude], 14),
+          () => {},
+          { enableHighAccuracy: true, timeout: 5000 }
+        );
+      }
+    })();
     return () => {
-      map.remove();
+      cancelled = true;
+      mapRef.current?.remove();
       mapRef.current = null;
+      layerRef.current = null;
     };
   }, []);
 
   useEffect(() => {
-    if (!layerRef.current || !hydrants) return;
+    const L = LRef.current;
+    if (!L || !layerRef.current || !hydrants) return;
     layerRef.current.clearLayers();
     const filtered = hydrants.filter((h: Hydrant) => {
       if (filterDistrict && filterDistrict !== "all" && h.district !== filterDistrict) return false;
@@ -65,7 +74,7 @@ export function HydrantMap({ filterDistrict, filterStatus = "all" }: Props) {
       return true;
     });
     filtered.forEach((h) => {
-      const marker = L.marker([h.lat, h.lng], { icon: pinIcon(statusClass(h)) });
+      const marker = L.marker([h.lat, h.lng], { icon: pinIcon(L, statusClass(h)) });
       marker.bindPopup(
         `<div style="font-family:Inter,sans-serif;min-width:160px">
           <div style="font-weight:600;font-size:14px;margin-bottom:4px">${h.code}</div>
