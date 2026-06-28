@@ -9,38 +9,123 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ProfilRouteImport } from './routes/profil'
+import { Route as ListeRouteImport } from './routes/liste'
+import { Route as CarteRouteImport } from './routes/carte'
+import { Route as AjouterRouteImport } from './routes/ajouter'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BorneIdRouteImport } from './routes/borne.$id'
 
+const ProfilRoute = ProfilRouteImport.update({
+  id: '/profil',
+  path: '/profil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ListeRoute = ListeRouteImport.update({
+  id: '/liste',
+  path: '/liste',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CarteRoute = CarteRouteImport.update({
+  id: '/carte',
+  path: '/carte',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AjouterRoute = AjouterRouteImport.update({
+  id: '/ajouter',
+  path: '/ajouter',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BorneIdRoute = BorneIdRouteImport.update({
+  id: '/borne/$id',
+  path: '/borne/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/ajouter': typeof AjouterRoute
+  '/carte': typeof CarteRoute
+  '/liste': typeof ListeRoute
+  '/profil': typeof ProfilRoute
+  '/borne/$id': typeof BorneIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/ajouter': typeof AjouterRoute
+  '/carte': typeof CarteRoute
+  '/liste': typeof ListeRoute
+  '/profil': typeof ProfilRoute
+  '/borne/$id': typeof BorneIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/ajouter': typeof AjouterRoute
+  '/carte': typeof CarteRoute
+  '/liste': typeof ListeRoute
+  '/profil': typeof ProfilRoute
+  '/borne/$id': typeof BorneIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/ajouter' | '/carte' | '/liste' | '/profil' | '/borne/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/ajouter' | '/carte' | '/liste' | '/profil' | '/borne/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/ajouter'
+    | '/carte'
+    | '/liste'
+    | '/profil'
+    | '/borne/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AjouterRoute: typeof AjouterRoute
+  CarteRoute: typeof CarteRoute
+  ListeRoute: typeof ListeRoute
+  ProfilRoute: typeof ProfilRoute
+  BorneIdRoute: typeof BorneIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/profil': {
+      id: '/profil'
+      path: '/profil'
+      fullPath: '/profil'
+      preLoaderRoute: typeof ProfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/liste': {
+      id: '/liste'
+      path: '/liste'
+      fullPath: '/liste'
+      preLoaderRoute: typeof ListeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/carte': {
+      id: '/carte'
+      path: '/carte'
+      fullPath: '/carte'
+      preLoaderRoute: typeof CarteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ajouter': {
+      id: '/ajouter'
+      path: '/ajouter'
+      fullPath: '/ajouter'
+      preLoaderRoute: typeof AjouterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +133,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/borne/$id': {
+      id: '/borne/$id'
+      path: '/borne/$id'
+      fullPath: '/borne/$id'
+      preLoaderRoute: typeof BorneIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AjouterRoute: AjouterRoute,
+  CarteRoute: CarteRoute,
+  ListeRoute: ListeRoute,
+  ProfilRoute: ProfilRoute,
+  BorneIdRoute: BorneIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
