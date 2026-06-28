@@ -1,11 +1,14 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { db } from "@/lib/db";
-import { Flame } from "lucide-react";
+import { Flame, AlertCircle } from "lucide-react";
 
 function isClientReady() {
   return typeof window !== "undefined";
 }
+
+const VALID_USER = "bob evan";
+const VALID_PASSWORD = "1234";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -24,16 +27,21 @@ export const Route = createFileRoute("/")({
 
 function WelcomePage() {
   const [name, setName] = useState("");
-  const [matricule, setMatricule] = useState("");
+  const [password, setPassword] = useState("");
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleStart(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim()) return;
+    setError(null);
+    const normalizedName = name.trim().toLowerCase();
+    if (normalizedName !== VALID_USER || password !== VALID_PASSWORD) {
+      setError("Identifiant ou mot de passe incorrect");
+      return;
+    }
     setSaving(true);
     await db.inspectors.add({
-      name: name.trim(),
-      matricule: matricule.trim() || undefined,
+      name: "Bob Evan",
       createdAt: Date.now(),
     });
     window.location.href = "/carte";
@@ -53,12 +61,13 @@ function WelcomePage() {
         <form onSubmit={handleStart} className="mt-10 w-full max-w-sm space-y-4">
           <div>
             <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-secondary-foreground/70">
-              Nom de l'inspecteur *
+              Identifiant *
             </label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Ex: Karim Benali"
+              placeholder="bob evan"
+              autoComplete="username"
               className="w-full rounded-lg border-0 bg-white/95 px-4 py-3 text-base text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               required
               autoFocus
@@ -66,21 +75,32 @@ function WelcomePage() {
           </div>
           <div>
             <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-secondary-foreground/70">
-              Matricule (optionnel)
+              Mot de passe *
             </label>
             <input
-              value={matricule}
-              onChange={(e) => setMatricule(e.target.value)}
-              placeholder="Ex: 1024"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••"
+              autoComplete="current-password"
               className="w-full rounded-lg border-0 bg-white/95 px-4 py-3 text-base text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              required
             />
           </div>
+
+          {error && (
+            <div className="flex items-center gap-2 rounded-lg bg-primary/15 px-3 py-2 text-sm text-primary-foreground">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
           <button
             type="submit"
-            disabled={saving || !name.trim()}
+            disabled={saving}
             className="w-full rounded-xl bg-primary py-3.5 font-semibold text-primary-foreground shadow-lg shadow-primary/30 transition-all active:scale-[0.98] disabled:opacity-50"
           >
-            {saving ? "…" : "Commencer l'inspection"}
+            {saving ? "…" : "Se connecter"}
           </button>
         </form>
 
