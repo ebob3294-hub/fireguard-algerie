@@ -1,0 +1,1 @@
+var e=[`Nouaceur (centre)`,`Dar Bouazza`,`Bouskoura`,`Ouled Saleh`,`Ouled Azzouz`,`Lahraouiyine`,`Médiouna`,`Aéroport Mohammed V`,`Autre`],t=[33.3683,-7.5683];export{t as n,e as t};

@@ -1,0 +1,22 @@
+{
+  "name": "HydraNouaceur — Bornes incendie",
+  "short_name": "HydraNouaceur",
+  "description": "Recensement et inspection des bornes d'incendie de la province de Nouaceur",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f6f8",
+  "theme_color": "#b3261e",
+  "lang": "fr",
+  "dir": "ltr",
+  "categories": ["utilities", "productivity"],
+  "icons": [
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
